@@ -61,3 +61,35 @@ void Page_Table::handle_page_fault(Address page_number)
 
     std::cout << "We do not have idle frame, we need to perfrom page-swap algorithm." << std::endl;
 }
+
+std::vector< Page_Table::Address > Page_Table::generate_random_reference_string(int reference_string_size)
+{
+    std::vector< Page_Table::Address > result;
+    for(int i = 0; i < reference_string_size; ++i)
+    {
+        Address random_address = static_cast< Address >(std::rand() % 256);
+        std::cout << random_address << std::endl;
+        result.push_back(random_address);
+    }
+    return result;
+}
+
+float Page_Table::calculate_page_fault()
+{
+    auto reference_string = generate_random_reference_string(1000);
+
+    int page_fault_counter = 0;
+    for(auto reference_character : reference_string)
+    {
+        // when we find one page fault
+        // ...
+        ++page_fault_counter;
+    }
+    
+    /**
+     * Page Fault Rate 0 ≤ p ≤ 1
+     * if p = 0, no page faults
+     * if p = 1, every reference is a fault 
+     */
+    return page_fault_counter / 4;
+}

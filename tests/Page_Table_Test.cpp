@@ -23,3 +23,10 @@ TEST(page_table_tests, translate_virtual_to_phsical_address)
         ASSERT_LE(pt.translate_virtual_to_phsical_address(i), 0xf);
     }
 }
+
+TEST(page_table_tests, page_fault_calculation)
+{
+    Page_Table pt;
+
+    pt.generate_random_reference_string(100);
+}
