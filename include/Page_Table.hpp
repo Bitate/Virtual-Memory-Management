@@ -1,3 +1,16 @@
+/**
+ * Suppose virtual address is 8-bit, we have 2^8 = 256 bytes virtual address space.
+ * With phsical memory is 16 bytes, we split it into 4 frames with each frame 4 bytes.
+ * phsical address is 4-bit (16 = 2^4). For virtual address, 256/4 = 64 pages.
+ * 
+ * 2^6 = 64 pages
+ * 2^2 = 4 bytes offset
+ * 
+ * We need to convert 8-bit virtual address to 4-bit phsical address.
+ * 
+ * With page table, we need to store the frame number, is_valid bit for each page.
+ */ 
+
 #pragma once
 
 #include <vector>
@@ -24,6 +37,8 @@ public:
 
     float calculate_page_fault();
 
+    void print_frame_list();
+
     void first_in_first_out_replacement();
     void least_recently_used_replacement();
     void second_chance_replacement();
@@ -34,19 +49,18 @@ private:
     struct page_table_entry
     {   
         Address frame_number : 2;
-        Address is_valid_page : 1;
+        Address is_valid : 1;
     };
+    std::vector< page_table_entry > page_table;
     
     struct frame_info
     {
-        int frame_id : 2;
-        int dirty_bit : 1;
+        int id;
+        bool is_dirty = false;
+        bool is_busy = false;
+        struct frame_info* next = nullptr;
     };
 
-    std::vector< page_table_entry > page_table;
-
-    std::list< int > idle_frames;
-    
-    std::list< frame_info > all_frames;
+    struct frame_info* frame_list_head = new frame_info;
 
 };

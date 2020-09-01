@@ -1,24 +1,44 @@
 #include "Page_Table.hpp"
 
 #include <iostream>
+#include <fstream>
 
 Page_Table::Page_Table()
 {
-    for(int i = 0; i < 16; ++i)
+    /**
+     * We have only 4 frames.
+     */
+    frame_list_head->next = new frame_info;
+    frame_list_head->next->id = 0;
+    for(int i = 1; i < 3; ++i)
     {
-        idle_frames.push_back(i);
+        auto tmp = new frame_info;
+        tmp->id = i;
+        tmp->next = frame_list_head->next;
+        frame_list_head->next = tmp;
+        delete tmp;
     }
+    frame_info* frame_list_tail = frame_list_head->next;
+    while(frame_list_tail->next)
+    {
+        frame_list_tail = frame_list_tail->next;
+    }
+    frame_list_tail->next = frame_list_head;
+    std::cout << "Create frame circular list" << std::endl;
 
+    /**
+     * We have 64 pages
+     */
     page_table.resize(64);
     for(auto page_table_entry : page_table)
     {
-        page_table_entry.is_valid_page = 0;
+        page_table_entry.is_valid = 0;
     }
 }
 
 bool Page_Table::is_valid_page(Address page_number)
 {
-    return page_table[ page_number ].is_valid_page;
+    return page_table[ page_number ].is_valid;
 }
 
 void Page_Table::swap_in(Address page_number, Address frame_number)
@@ -28,7 +48,7 @@ void Page_Table::swap_in(Address page_number, Address frame_number)
 
 void Page_Table::swap_out(Address page_number)
 {
-    page_table[ page_number ].is_valid_page = 0;
+    page_table[ page_number ].is_valid = 0;
 }
 
 Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address virtual_address)
@@ -44,22 +64,47 @@ Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address vir
         handle_page_fault(page_number);
     }
 
-
     return page_table[ virtual_address & 0xFC ].frame_number << 2;
 }
 
 void Page_Table::handle_page_fault(Address page_number)
 {
-    if(idle_frames.size() >= 1)
+    auto iterator = frame_list_head->next;
+    int iteration_counter = -1;
+    while(iterator)
     {
-        std::cout << "Yeah! We have idle frame(s)" << std::endl;
-        page_table[ page_number ].frame_number = idle_frames.front();
-        idle_frames.pop_front();
-        std::cout << "OK! handle page fault. " << std::endl;
-        return;
+        if(iterator == frame_list_head)
+        {
+            ++iteration_counter;
+        }
+        
+
+        /**
+         * We need to change bit.
+         */
+        if(iteration_counter == 1)
+        {
+
+        }
+
+        if(iterator->is_busy == 0)
+        {
+            std::cout << "We have free frame" << std::endl;
+            /**
+             * Map page to frame.
+             */
+            page_table[ page_number ].frame_number = iterator->id;
+            iterator->is_busy = 1;
+            return;
+        }
+        iterator = iterator->next;
     }
 
-    std::cout << "We do not have idle frame, we need to perfrom page-swap algorithm." << std::endl;
+    /**
+     * We choose the frame at the beginning of the all_frames list.
+     */
+    std::cout << "Perform page swap algorithm" << std::endl;
+    return;
 }
 
 std::vector< Page_Table::Address > Page_Table::generate_random_reference_string(int reference_string_size)
@@ -68,7 +113,6 @@ std::vector< Page_Table::Address > Page_Table::generate_random_reference_string(
     for(int i = 0; i < reference_string_size; ++i)
     {
         Address random_address = static_cast< Address >(std::rand() % 256);
-        std::cout << random_address << std::endl;
         result.push_back(random_address);
     }
     return result;
@@ -92,4 +136,12 @@ float Page_Table::calculate_page_fault()
      * if p = 1, every reference is a fault 
      */
     return page_fault_counter / 4;
+}
+
+void Page_Table::print_frame_list()
+{
+    while(frame_list_head)
+    {
+        std::cout << frame_list_head->id << std::endl;
+    }
 }
