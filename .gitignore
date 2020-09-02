@@ -34,3 +34,4 @@
 build
 googletest
 settings.json
+*.swp

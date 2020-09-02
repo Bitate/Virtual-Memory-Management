@@ -6,25 +6,27 @@
 Page_Table::Page_Table()
 {
     /**
-     * We have only 4 frames.
+     * We have only 4 frame.
      */
-    frame_list_head->next = new frame_info;
-    frame_list_head->next->id = 0;
-    for(int i = 1; i < 3; ++i)
-    {
-        auto tmp = new frame_info;
-        tmp->id = i;
-        tmp->next = frame_list_head->next;
-        frame_list_head->next = tmp;
-        delete tmp;
-    }
-    frame_info* frame_list_tail = frame_list_head->next;
-    while(frame_list_tail->next)
-    {
-        frame_list_tail = frame_list_tail->next;
-    }
-    frame_list_tail->next = frame_list_head;
-    std::cout << "Create frame circular list" << std::endl;
+	std::cout << "Initialize new frame: 0" << std::endl;
+	frame_list_head->next = new frame_info(0);
+	 for(int i = 1; i < 4; ++i)
+	 {
+	     auto tmp = new frame_info(i);
+	     tmp->next = frame_list_head->next;
+	     frame_list_head->next = tmp;
+	     tmp = nullptr;
+	     std::cout << "Initialize new frame: " << frame_list_head->next->id << std::endl;
+	 }
+	 
+	 frame_list_tail = frame_list_head->next;
+	 while(frame_list_tail->next)
+	 {
+	     
+		 frame_list_tail = frame_list_tail->next;
+	 }
+	 frame_list_tail->next = frame_list_head;
+	 std::cout << "Link all frames into a circular list" << std::endl;
 
     /**
      * We have 64 pages
@@ -34,6 +36,22 @@ Page_Table::Page_Table()
     {
         page_table_entry.is_valid = 0;
     }
+}
+
+Page_Table::~Page_Table()
+{
+	std::cout << "Destruct frame circular list" << std::endl;
+	while(frame_list_head != frame_list_tail)
+	{
+		frame_info* tmp = frame_list_head;
+	
+		if(frame_list_head->next)
+		{
+			frame_list_head = frame_list_head->next;
+		}
+		std::cout << "Delete frame: " << tmp->id << std::endl;
+	}
+
 }
 
 bool Page_Table::is_valid_page(Address page_number)

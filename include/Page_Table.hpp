@@ -22,6 +22,7 @@ public:
     using Address = unsigned char;
 public:
     Page_Table();
+    ~Page_Table();
 public:
     bool is_valid_page(Address page_number);
 
@@ -56,11 +57,16 @@ private:
     struct frame_info
     {
         int id;
-        bool is_dirty = false;
-        bool is_busy = false;
-        struct frame_info* next = nullptr;
+        bool is_dirty;
+        bool is_busy;
+        struct frame_info* next;
+	frame_info():id(0), is_dirty(false), is_busy(false), next(nullptr)
+	{}
+	frame_info(int index):id(index), is_dirty(false), is_busy(false), next(nullptr)
+	{}
     };
 
     struct frame_info* frame_list_head = new frame_info;
+    struct frame_info* frame_list_tail = nullptr;
 
 };

@@ -18,6 +18,5 @@ TEST(page_table_tests, print_frame_info)
 {
     Page_Table pt;
 
-    pt.print_frame_list();
 
 }
