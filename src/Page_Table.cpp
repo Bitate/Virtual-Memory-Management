@@ -79,6 +79,9 @@ Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address vir
     if(!is_valid_page(page_number))
     {
         std::cout << "Oop! page fault. " << std::endl;
+	/**
+	 * We need to set a frame to this page_number.
+	 */
         handle_page_fault(page_number);
     }
 
@@ -88,40 +91,34 @@ Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address vir
 void Page_Table::handle_page_fault(Address page_number)
 {
     auto iterator = frame_list_head->next;
-    int iteration_counter = -1;
-    while(iterator)
+    int iteration_counter = 0;
+    while(iterator != frame_list_tail)
     {
-        if(iterator == frame_list_head)
-        {
-            ++iteration_counter;
-        }
-        
-
-        /**
-         * We need to change bit.
-         */
-        if(iteration_counter == 1)
-        {
-
-        }
-
-        if(iterator->is_busy == 0)
-        {
-            std::cout << "We have free frame" << std::endl;
-            /**
-             * Map page to frame.
-             */
-            page_table[ page_number ].frame_number = iterator->id;
-            iterator->is_busy = 1;
-            return;
-        }
-        iterator = iterator->next;
+			if(iteration_counter == 0)
+			{
+				if(iterator->is_busy == false)
+				{
+					std::cout << "We have free frame, no page fault. " << std::endl;	
+					break;
+				}
+				iterator = iterator->next;
+			}
+			else
+			{
+					if(iterator->is_busy == false)
+					{
+							std::cout << "Second time we have free frame." << std::endl;
+					}
+					else
+					{
+							iterator->is_busy == false;
+							break;
+					}
+			}
     }
 
-    /**
-     * We choose the frame at the beginning of the all_frames list.
-     */
-    std::cout << "Perform page swap algorithm" << std::endl;
+    page_table[ page_number ].frame_number = iterator->id; 
+    iterator->is_busy = true;                             
     return;
 }
 
@@ -156,10 +153,3 @@ float Page_Table::calculate_page_fault()
     return page_fault_counter / 4;
 }
 
-void Page_Table::print_frame_list()
-{
-    while(frame_list_head)
-    {
-        std::cout << frame_list_head->id << std::endl;
-    }
-}

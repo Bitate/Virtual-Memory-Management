@@ -59,10 +59,11 @@ private:
         int id;
         bool is_dirty;
         bool is_busy;
+	bool is_used;
         struct frame_info* next;
-	frame_info():id(0), is_dirty(false), is_busy(false), next(nullptr)
+	frame_info():id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
 	{}
-	frame_info(int index):id(index), is_dirty(false), is_busy(false), next(nullptr)
+	frame_info(int index):id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
 	{}
     };
 

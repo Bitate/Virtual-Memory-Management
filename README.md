@@ -19,3 +19,15 @@ When we select a page for replacement, we examine its modify bit. If the bit is 
 The lower page fault rate, the better page replacement algorithm. Because with each page fault, we have to perform one disk I/O, which is so expensive.
 
 ## What's the role of disk?
+
+## Second Chance Replacement Algorithm
+Also known as enhanced clock algorithm.
+Dirty bit: write bit, denote that the page has been modified.
+-----------------------------------------------
+|is_busy | is_dirty |    | is_busy | is_dirty |
+-----------------------------------------------
+|   0    |     0    | -> |     replace page   |
+|   0    |     1    | -> |    0    |     0    |
+|   1    |     0    | -> |    0    |     0    | 
+|   1    |     1    | -> |    0    |     1    |
+-----------------------------------------------
