@@ -15,37 +15,77 @@
 
 #include <vector>
 #include <list>
+#include <functional>
 
 class Page_Table
 {
 public:
+    /**
+     * Address type for virtual address and phsical address.
+     */
     using Address = unsigned char;
+
+    /**
+     * Page fault handler type for various page replacement algorithms.
+     */
+    using Page_Fault_Handler = std::function< Address() >;
 public:
     Page_Table();
     ~Page_Table();
+
+    Page_Table(const Page_Table&) = delete;
+    Page_Table& operator=(const Page_Table&) = delete;
+
+    Page_Table(Page_Table&&) = delete;
+    Page_Table& operator=(Page_Table&&) = delete;
 public:
+    /**
+     * @brief  Whether given page has a corresponding phsical frame.
+     * @param  page_number  Page number is the index of page table.
+     * @return  True if given page has a corresponding phsical frame.
+     */
     bool is_valid_page(Address page_number);
 
+    /**
+     * @brief  Translate/Map a given virtual/linear address to phsical address.
+     * @param  virtual_address  Virtual/Linear address.
+     * @return  Phsical address.
+     */
     Address translate_virtual_to_phsical_address(Address virtual_address);
 
+    /**
+     * @brief  Handler for page fault.
+     * @param  page_number  Page to be handled due to page fault.
+     */
     void handle_page_fault(Address page_number);
 
-    void swap_in(Address page_number, Address frame_number);
+    /**
+     * @brief  Generate random reference string for testing page fault rate.
+     * @param  reference_string_length  Length of generated reference string.
+     * @return  A sequence of reference string.
+     */
+    std::vector< Address > generate_random_reference_string(int reference_string_length);
 
-    void swap_out(Address page_number);
+    /**
+     * @brief  Calculate page fault rate.
+     * @return  Page fault rate.
+     */
+    float calculate_page_fault_rate();
 
-    std::vector< Address > generate_random_reference_string(int reference_string_size);
-
-    float calculate_page_fault();
-
-    void print_frame_list();
-
+    /**
+     * @brief  FIFO page replacement algorithm.
+     * @return  Phsical frame number.
+     */
     Address first_in_first_out_replacement();
 
+    /**
+     * @brief  LRU(least recently used) replacement algorithm.
+     * @return  Phsical frame number.
+     */
     Address least_recently_used_replacement();
 
     /**
-     * @brief  Clock based page-swap.
+     * @brief  Clock relacement algorithm.
      * @return  Phsical frame number.
      *
      * We link all available phsical frames info 
@@ -63,7 +103,6 @@ public:
      */
     Address second_chance_replacement();
 
-
 private:
     struct page_table_entry
     {   
@@ -78,16 +117,21 @@ private:
         int id;
         bool is_dirty;
         bool is_busy;
-	bool is_used;
+	    bool is_used;
         struct frame_info* next;
 
-	frame_info():id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
-	{}
-	frame_info(int index):id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
-	{}
+        frame_info()
+            :id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
+        {
+        }
+
+        frame_info(int index)
+            :id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
+        {
+        }
     };
 
     struct frame_info* frame_list_head = new frame_info;
+    struct frame_info* current_frame = nullptr;
     struct frame_info* frame_list_tail = nullptr;
-
 };
