@@ -40,11 +40,29 @@ public:
 
     void print_frame_list();
 
-    void first_in_first_out_replacement();
-    void least_recently_used_replacement();
-    void second_chance_replacement();
-    void counting_based_replacement();
-    void page_buffering_replacement();
+    Address first_in_first_out_replacement();
+
+    Address least_recently_used_replacement();
+
+    /**
+     * @brief  Clock based page-swap.
+     * @return  Phsical frame number.
+     *
+     * We link all available phsical frames info 
+     * into a circular linked list. For each page 
+     * fault, we move the pointer clockwise to find 
+     * a node in which the is_used bit is 0. If we 
+     * do not find that bit, in the second iteration,
+     * we change the first node's is_used bit to 0.
+     */
+    Address clock_replacement();
+
+    /**
+     * @brief  Second chance replacement.
+     * @return  Phsical frame number.
+     */
+    Address second_chance_replacement();
+
 
 private:
     struct page_table_entry
@@ -52,6 +70,7 @@ private:
         Address frame_number : 2;
         Address is_valid : 1;
     };
+
     std::vector< page_table_entry > page_table;
     
     struct frame_info
@@ -61,6 +80,7 @@ private:
         bool is_busy;
 	bool is_used;
         struct frame_info* next;
+
 	frame_info():id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
 	{}
 	frame_info(int index):id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false)

@@ -105,15 +105,15 @@ void Page_Table::handle_page_fault(Address page_number)
 			}
 			else
 			{
-					if(iterator->is_busy == false)
-					{
-							std::cout << "Second time we have free frame." << std::endl;
-					}
-					else
-					{
-							iterator->is_busy == false;
-							break;
-					}
+                if(iterator->is_busy == false)
+                {
+                    std::cout << "Second time we have free frame." << std::endl;
+                }
+                else
+                {
+                    iterator->is_busy == false;
+                    break;
+                }
 			}
     }
 
@@ -153,3 +153,12 @@ float Page_Table::calculate_page_fault()
     return page_fault_counter / 4;
 }
 
+Page_Table::Address Page_Table::least_recently_used_replacement()
+{
+    // TODO
+}
+
+Page_Table::Address Page_Table::clock_replacement()
+{
+    
+}
