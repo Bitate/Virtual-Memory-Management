@@ -68,9 +68,8 @@ public:
 
     /**
      * @brief  Calculate page fault rate.
-     * @return  Page fault rate.
      */
-    float calculate_page_fault_rate();
+    void calculate_page_fault_rate();
 
     /**
      * @brief  FIFO page replacement algorithm.

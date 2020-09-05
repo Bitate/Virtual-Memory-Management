@@ -23,11 +23,15 @@ The lower page fault rate, the better page replacement algorithm. Because with e
 ## Second Chance Replacement Algorithm
 Also known as enhanced clock algorithm.
 Dirty bit: write bit, denote that the page has been modified.
------------------------------------------------
+
+
 |is_busy | is_dirty |    | is_busy | is_dirty |
------------------------------------------------
+|--------|----------|----|---------|----------|
 |   0    |     0    | -> |     replace page   |
 |   0    |     1    | -> |    0    |     0    |
 |   1    |     0    | -> |    0    |     0    | 
 |   1    |     1    | -> |    0    |     1    |
------------------------------------------------
+
+
+# Reference
+[操作系统 清华大学 (向勇、陈渝)](https://www.bilibili.com/video/BV1js411b7vg?p=28)

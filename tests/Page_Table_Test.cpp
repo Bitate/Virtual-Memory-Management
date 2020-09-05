@@ -12,8 +12,20 @@ TEST(page_table_tests, translate_virtual_to_phsical_address)
      */
     for(int i = 0; i <= 0x3f; ++i)
     {
-        ASSERT_LE(pt.translate_virtual_to_phsical_address(i), 0xf);
+        /**
+         * Make sure all translated/mapped phsical address is <= 0x0f.
+         * Because, we only have 4 physical frames with each 4 bytes,
+         * the phsical address space is 4*4 = 16 bytes.
+         * Thus, all the translated/mapped phsical address must be in 
+         * the range of [0, 15]. Namely, [0, 0x0f] in hexadecimal.
+         */
+        ASSERT_LE(pt.translate_virtual_to_phsical_address(i), 0x0f);
         std::cout << i << std::endl;
     }
 }
 
+TEST(page_table_tests, calculate_page_fault_rate)
+{
+    Page_Table pt;
+    pt.calculate_page_fault_rate();
+}

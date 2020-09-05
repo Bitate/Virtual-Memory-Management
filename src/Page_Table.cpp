@@ -58,7 +58,7 @@ Page_Table::~Page_Table()
 
 bool Page_Table::is_valid_page(Address page_number)
 {
-    return page_table[page_number].is_valid;
+    return page_table[ page_number ].is_valid;
 }
 
 Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address virtual_address)
@@ -80,7 +80,8 @@ Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address vir
 
 void Page_Table::handle_page_fault(Address page_number)
 {
-    page_table[page_number].frame_number = clock_replacement();
+    page_table[ page_number ].frame_number = clock_replacement();
+    page_table[ page_number ].is_valid = true;
     return;
 }
 
@@ -89,22 +90,23 @@ std::vector<Page_Table::Address> Page_Table::generate_random_reference_string(in
     std::vector<Page_Table::Address> result;
     for (int i = 0; i < reference_string_length; ++i)
     {
-        Address random_address = static_cast<Address>(std::rand() % 256);
+        Address random_address = static_cast<Address>(std::rand() % 0x3f);
         result.push_back(random_address);
     }
     return result;
 }
 
-float Page_Table::calculate_page_fault_rate()
+void Page_Table::calculate_page_fault_rate()
 {
     auto reference_string = generate_random_reference_string(1000);
-
     int page_fault_counter = 0;
-    for (auto reference_character : reference_string)
+    for (auto page_number : reference_string)
     {
-        // when we find one page fault
-        // ...
-        ++page_fault_counter;
+        if (!is_valid_page(page_number))
+        {
+            ++page_fault_counter;
+            handle_page_fault(page_number);
+        }
     }
 
     /**
@@ -112,7 +114,7 @@ float Page_Table::calculate_page_fault_rate()
      * if p = 0, no page faults
      * if p = 1, every reference is a fault 
      */
-    return page_fault_counter / 4;
+    std::cout << "Page fault rate is: " << page_fault_counter << '/' << 1000 << std::endl;
 }
 
 Page_Table::Address Page_Table::least_recently_used_replacement()
@@ -129,17 +131,17 @@ Page_Table::Address Page_Table::clock_replacement()
          */
         if (current_frame->is_busy == 0)
         {
-            std::cout << "current points to: " << current_frame->id << std::endl;
+            std::cout << "Clock replacement: current frame is: " << current_frame->id << std::endl;
             current_frame = current_frame->next;
             return current_frame->id;
         }
 
         /**
-         * If we the frame is not recently used
+         * If the frame is not recently used
          */
         if (current_frame->is_used == 0)
         {
-            std::cout << "current points to: " << current_frame->id << std::endl;
+            std::cout << "Clock replacement: current frame is: " << current_frame->id << std::endl;
             current_frame = current_frame->next;
             return current_frame->id;
         }
