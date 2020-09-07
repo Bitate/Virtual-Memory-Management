@@ -16,6 +16,7 @@
 #include <vector>
 #include <list>
 #include <functional>
+#include <string>
 
 class Page_Table
 {
@@ -30,6 +31,13 @@ public:
      */
     using Page_Fault_Handler = std::function< Address() >;
 public:
+    /**
+     * @brief  Construct a page table with m pages and n phsical frames with each k-byte.
+     * @param  m  Number of pages.
+     * @param  n  Number of frames.
+     * @param  k  Page/Frame size in byte.
+     */
+    Page_Table(uint64_t m, uint64_t n, uint64_t k);
     Page_Table();
     ~Page_Table();
 
@@ -49,15 +57,17 @@ public:
     /**
      * @brief  Translate/Map a given virtual/linear address to phsical address.
      * @param  virtual_address  Virtual/Linear address.
+     * @param  page_replacement_algorithm  Name of age replacement algorithm.
      * @return  Phsical address.
      */
-    Address translate_virtual_to_phsical_address(Address virtual_address);
+    Address translate_virtual_to_phsical_address(Address virtual_address, const std::string& page_replacement_algorithm);
 
     /**
      * @brief  Handler for page fault.
      * @param  page_number  Page to be handled due to page fault.
+     * @param  page_replacement_algorithm  Name of specific page replacement algorithm.
      */
-    void handle_page_fault(Address page_number);
+    void handle_page_fault(Address page_number, const std::string& page_replacement_algorithm);
 
     /**
      * @brief  Generate random reference string for testing page fault rate.
