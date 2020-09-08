@@ -2,9 +2,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <random>
 
 Page_Table::Page_Table(uint64_t m, uint64_t n, uint64_t k)
 {
+    /**
+     * Construct frame circular list.
+     */
     frame_list_head->next = new frame_info(0);
     for (uint64_t i = 1; i < n; ++i)
     {
@@ -17,13 +21,15 @@ Page_Table::Page_Table(uint64_t m, uint64_t n, uint64_t k)
     frame_list_tail = frame_list_head->next;
     while (frame_list_tail->next)
     {
-
         frame_list_tail = frame_list_tail->next;
     }
     frame_list_tail->next = frame_list_head;
 
     current_frame = frame_list_head;
     
+    /**
+     * Construct page table with m entries.
+     */
     page_table.resize(m);
     for (auto page_table_entry : page_table)
     {
@@ -53,8 +59,7 @@ bool Page_Table::is_valid_page(Address page_number)
 Page_Table::Address Page_Table::translate_virtual_to_phsical_address(Address virtual_address, const std::string& page_replacement_algorithm)
 {
     /**
-     * Most significant 6-bit of virtual address is the page number.
-     * So the mask is: 1111 11000 = 0xFC
+     * TODO:
      */
     Address page_number = virtual_address & 0xfc;
     if (!is_valid_page(page_number))
@@ -69,42 +74,30 @@ void Page_Table::handle_page_fault(Address page_number, const std::string& page_
 {
     if(page_replacement_algorithm == "clock")
     {
-        page_table[ page_number ].frame_number = clock_replacement();
-        page_table[ page_number ].is_valid = true;
+        auto chosen_frame_number =  clock_replacement();
+        page_table[ page_number ].frame_number = chosen_frame_number;
+        page_table[ page_number ].is_valid = 1;
         return;
     }
 }
 
-std::vector<Page_Table::Address> Page_Table::generate_random_reference_string(int reference_string_length)
+std::vector<Page_Table::Address> Page_Table::generate_random_reference_string(int reference_string_length, Address max_page_index)
 {
+    /**
+     * Generate random number :)
+     * Taken from: https://stackoverflow.com/a/13445752/11850070
+     */
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<int>(max_page_index)); // distribution in range [0, max_page_index]
+
     std::vector<Page_Table::Address> result;
     for (int i = 0; i < reference_string_length; ++i)
     {
-        Address random_address = static_cast<Address>(std::rand() % 0x3f);
+        Address random_address = static_cast<Address>(dist6(rng) % max_page_index);
         result.push_back(random_address);
     }
     return result;
-}
-
-void Page_Table::calculate_page_fault_rate()
-{
-    auto reference_string = generate_random_reference_string(1000);
-    int page_fault_counter = 0;
-    for (auto page_number : reference_string)
-    {
-        if (!is_valid_page(page_number))
-        {
-            ++page_fault_counter;
-            handle_page_fault(page_number, "clock");
-        }
-    }
-
-    /**
-     * Page Fault Rate 0 ≤ p ≤ 1
-     * if p = 0, no page faults
-     * if p = 1, every reference is a fault 
-     */
-    std::cout << "Page fault rate is: " << page_fault_counter << '/' << 1000 << std::endl;
 }
 
 Page_Table::Address Page_Table::least_recently_used_replacement()
@@ -117,27 +110,21 @@ Page_Table::Address Page_Table::clock_replacement()
     while (current_frame)
     {
         /**
-         * If we find a free frame, return id directly.
+         * If the reference bit is 0.
          */
-        if (current_frame->is_busy == 0)
+        if (current_frame->reference_bit == 0)
         {
+            Address chosen_frame_number = current_frame->id;
+            
+            current_frame->reference_bit = 1;
             current_frame = current_frame->next;
-            return current_frame->id;
+            
+            return chosen_frame_number;
         }
-
-        /**
-         * If the frame is not recently used
-         */
-        if (current_frame->is_used == 0)
+        else // reference bit is 1, set to 0, thus give this second chance.
         {
-            std::cout << "Clock replacement: current frame is: " << current_frame->id << std::endl;
+            current_frame->reference_bit = 0;
             current_frame = current_frame->next;
-            return current_frame->id;
         }
-        else
-        {
-            current_frame->is_used = 0;
-        }
-        current_frame = current_frame->next;
     }
 }

@@ -24,7 +24,7 @@ public:
     /**
      * Address type for virtual address and phsical address.
      */
-    using Address = unsigned char;
+    using Address = uint64_t;
 
     /**
      * Page fault handler type for various page replacement algorithms.
@@ -72,14 +72,10 @@ public:
     /**
      * @brief  Generate random reference string for testing page fault rate.
      * @param  reference_string_length  Length of generated reference string.
+     * @param  max_page_index  Max page index.
      * @return  A sequence of reference string.
      */
-    std::vector< Address > generate_random_reference_string(int reference_string_length);
-
-    /**
-     * @brief  Calculate page fault rate.
-     */
-    void calculate_page_fault_rate();
+    std::vector< Address > generate_random_reference_string(int reference_string_length, Address max_page_index);
 
     /**
      * @brief  FIFO page replacement algorithm.
@@ -94,53 +90,57 @@ public:
     Address least_recently_used_replacement();
 
     /**
-     * @brief  Clock relacement algorithm.
+     * @brief  Clock(also known as Second Chance) relacement algorithm.
      * @return  Phsical frame number.
      *
-     * We link all available phsical frames info 
-     * into a circular linked list. For each page 
-     * fault, we move the pointer clockwise to find 
-     * a node in which the is_used bit is 0. If we 
-     * do not find that bit, in the second iteration,
-     * we change the first node's is_used bit to 0.
+     * We link all available phsical frames into a circular linked list. 
+     * For each page fault, we move the pointer current_frame clockwise
+     * to find a node in which the is_used bit is 0. 
+     * If is_used is 1, we set it to 0, and move current_frame
+     * to next node. Thus, giving the node with is_used bit being 1 
+     * a second chance to be replaced.
+     * 
+     * This algorithm degenerates to FIFO replacement if all bits are set to 1.
      */
     Address clock_replacement();
-
-    /**
-     * @brief  Second chance replacement.
-     * @return  Phsical frame number.
-     */
-    Address second_chance_replacement();
-
 private:
     struct page_table_entry
     {   
-        Address frame_number : 2;
-        Address is_valid : 1;
+        Address frame_number;
+        Address is_valid:1;
     };
 
     std::vector< page_table_entry > page_table;
     
     struct frame_info
     {
-        int id;
+        uint64_t id;
+        unsigned char reference_bit : 1;
         bool is_dirty;
         bool is_busy;
 	    bool is_used;
         struct frame_info* next;
 
         frame_info()
-            :id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
+            :id(0), is_dirty(false), is_busy(false), next(nullptr), is_used(false), reference_bit(0)
         {
         }
 
         frame_info(int index)
-            :id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false)
+            :id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false), reference_bit(0)
         {
         }
     };
 
     struct frame_info* frame_list_head = new frame_info;
+
+    /**
+     * When a frame is needed, current_frame advances
+     * until it finds a page with a 0 reference bit.
+     * 
+     * As current_frame advances, it clears all the reference
+     * bits before selecting the next page for replacement.
+     */
     struct frame_info* current_frame = nullptr;
     struct frame_info* frame_list_tail = nullptr;
 };
