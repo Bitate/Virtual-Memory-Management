@@ -126,7 +126,7 @@ private:
         {
         }
 
-        frame_info(int index)
+        frame_info(uint64_t index)
             :id(index), is_dirty(false), is_busy(false), next(nullptr), is_used(false), reference_bit(0)
         {
         }

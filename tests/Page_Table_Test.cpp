@@ -6,9 +6,6 @@ constexpr uint64_t ONE_K_BYTES = 1024;
 constexpr uint64_t ONE_M_BYTES = 1024 * ONE_K_BYTES;
 constexpr uint64_t ONE_G_BYTES = 1024 * ONE_M_BYTES;
 
-constexpr uint64_t FOUR_K_BYTES = 4 * ONE_K_BYTES;
-constexpr uint64_t EIGHT_G_BYTES = 8 * ONE_G_BYTES;
-
 TEST(page_table_tests, clock_replacement_test)
 {
     /**
@@ -20,10 +17,7 @@ TEST(page_table_tests, clock_replacement_test)
      */
     Page_Table pt(1024, 128, ONE_K_BYTES);
 
-    /**
-     * Generate 1000 page reference index with each page index is in the range of [0, 1023].
-     */
-    auto random_reference_string = pt.generate_random_reference_string(2000, 1024);
+    auto random_reference_string = pt.generate_random_reference_string(2048, 1024);
     
     int page_fault_counter = 0;
     int page_ok_counter = 0;
@@ -39,5 +33,5 @@ TEST(page_table_tests, clock_replacement_test)
             ++page_ok_counter;
         }
     }
-    std::cout << "Page fault: " << page_fault_counter << " times." << std::endl;
+    std::cout << "Page fault Rate: " << page_fault_counter << "/2048" << std::endl;
 }

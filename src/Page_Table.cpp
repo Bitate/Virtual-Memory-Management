@@ -127,4 +127,5 @@ Page_Table::Address Page_Table::clock_replacement()
             current_frame = current_frame->next;
         }
     }
+    return 0;
 }
